@@ -58,7 +58,7 @@ def crawlBlog(filters):
             soupPage = BeautifulSoup(page.content, "html.parser")
             for post in soupPage.find_all(class_="cms-item-link w-inline-block"):
                 blogPosts = blogPosts + [post.get('href')]
-        print(blogPosts)
+        #print(blogPosts)
         return blogPosts
 
 
@@ -183,7 +183,7 @@ def wordCloud(dict):
     plt.show()
 
 def main():
-    filters = ['lifestyle','social-media'] #options are: all, lifestyle, social-media, selfie, beauty
+    filters = ['all'] #options are: all, lifestyle, social-media, selfie, beauty
     countAllPages(crawlBlog(filters))
     exportCSV(count, "wordFrequency.csv")
     filterDict(count)

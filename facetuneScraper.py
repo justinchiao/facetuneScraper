@@ -188,8 +188,9 @@ def main():
     exportCSV(count, "wordFrequency.csv")
     filterDict(count)
     exportCSV(count, "wordFrequencyWordCloud.csv")
-    wordCloud(count)
     print("--- %s seconds ---" % (time.time() - start_time))
+    wordCloud(count)
+    #print("--- %s seconds ---" % (time.time() - start_time))
 
 
 if __name__ == "__main__":

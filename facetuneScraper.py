@@ -80,7 +80,7 @@ def scrapePost(url):
     text = ''
     for i in range(len(textList)): 
         text = text + textList[i]
-    text = textCleaner(text)
+    text = textCleaner(text + '' + title)
     return text
     
 

@@ -15,6 +15,7 @@ import copy
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import pandas as pd
+import chardet
 
 start_time = time.time()
 
@@ -47,8 +48,9 @@ def crawlBlog(filters):
                 break
 
             pageNum += 1
+        print(len(blogPosts))
         return blogPosts
-    
+        
     else:
         for i in range(len(filters)):
             url = 'https://www.facetuneapp.com/blog-category/' + filters[i]
@@ -82,7 +84,20 @@ def scrapePost(url):
         text = text + textList[i]
     text = textCleaner(text + '' + title)
     return text
-    
+
+def phraseDetection(inputString):
+    with open('phrases.csv', newline='') as f:
+        search = list(csv.reader(f))
+    phrases = []
+    for i in range(len(search)):
+        phrases.append(search[i][0])
+        
+    for i in range(len(phrases)):
+        newPhrase = phrases[i].replace(" ", "_" )
+        inputString = inputString.replace(phrases[i], newPhrase)
+
+    #print(inputString)
+    return inputString
 
 def textCleaner(inputString):
     '''returns list of one word strings without any extra spaces, line breaks, or special characters.'''
@@ -105,12 +120,13 @@ def textCleaner(inputString):
             res2 += res[i]    
     
     #remove emojis/special char
-    wordList = makeList(res2)
+    wordList = makeList(phraseDetection(res2))
+
     for i in range(len(wordList)):
         if not wordList[i].isalnum():
             newWord=""
             for k in range(len(wordList[i])):
-                if wordList[i][k].isalnum():
+                if wordList[i][k].isalnum() or wordList[i][k] == '_':
                     newWord = newWord + wordList[i][k]
             wordList[i] = newWord
     return wordList
@@ -134,9 +150,9 @@ def countAllPages(list):
     for i in range(len(list)):
         counter(list[i])
 
-def filterDict(dict):
+def filterDictRemove(dict):
     '''filters dictionary to exclude unwanted words'''
-    with open('noiseWords.csv', newline='') as f:
+    with open('noiseWords.csv', newline='',encoding='UTF-8') as f:
         search = list(csv.reader(f))
     noiseWords = []
     for i in range(len(search)):
@@ -146,6 +162,20 @@ def filterDict(dict):
     staticKeys = copy.deepcopy(keys)
     for i in range(len(staticKeys)):
         if  keys[i] in noiseWords:
+            del dict[staticKeys[i]]
+
+def filterDictKeep(dict):
+    '''filters dictionary to exclude unwanted words'''
+    with open('keepWords.csv', newline='',encoding='UTF-8') as f:
+        search = list(csv.reader(f))
+    keepWords = []
+    for i in range(len(search)):
+        keepWords.append(search[i][0])
+
+    keys = list(dict.keys())
+    staticKeys = copy.deepcopy(keys)
+    for i in range(len(staticKeys)):
+        if  keys[i] not in keepWords:
             del dict[staticKeys[i]]
 
 
@@ -186,7 +216,7 @@ def main():
     filters = ['all'] #options are: all, lifestyle, social-media, selfie, beauty
     countAllPages(crawlBlog(filters))
     exportCSV(count, "wordFrequency.csv")
-    filterDict(count)
+    filterDictKeep(count)
     exportCSV(count, "wordFrequencyWordCloud.csv")
     print("--- %s seconds ---" % (time.time() - start_time))
     wordCloud(count)
